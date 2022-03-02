@@ -175,3 +175,39 @@ exports.updateUser = async (req, res) => {
       .json({ success: false, msg: "Service is down. Contact administrator" });
   }
 };
+
+
+exports.updateLanguage = async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(404).json({ success: false, msg: "Invalid record" });
+    }
+    if (req.body.language !=="english") {
+      if(req.body.language !=="urdu"){
+        return res
+        .status(400)
+        .json({ success: false, msg: "Invalid input" });
+      }
+      
+    }
+    const user = await User.findOneAndUpdate(
+      id,
+      { language: req.body.language, },
+      { new: true } 
+    ).lean();
+
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "Invalid Request" });
+    }
+    return res.status(200).json({
+      success: true,
+      msg: "Langugae updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(400)
+      .json({ success: false, msg: "Service is down. Contact administrator" });
+  }
+};

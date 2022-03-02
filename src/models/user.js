@@ -17,7 +17,8 @@ const userSchema = new Schema({
   approved: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now() },
   promo_code: { type: String },
-  role: { type: String, enum: ['buyer', 'seller', "both"] }
+  role: { type: String, enum: ['buyer', 'seller', "both"] },
+  language:{type:String, enum:["urdu", "english"]}
 
 });
 

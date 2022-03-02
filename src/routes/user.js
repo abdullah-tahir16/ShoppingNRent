@@ -13,4 +13,6 @@ router.post(
 );
 router.post("/update", userMiddleware, userController.updateUser);
 router.get("/get", userMiddleware, adminMiddleware, userController.getUserById);
+
+router.post("/language", userMiddleware, userController.updateLanguage)
 module.exports = router;

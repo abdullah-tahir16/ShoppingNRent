@@ -124,7 +124,7 @@ exports.getUserById = async (req, res) => {
 
     const user = await User.findOne(
       { _id: id },
-      { password: false, member_id: false, _id: false, __v: false }
+      { password: false,  _id: false, __v: false }
     ).lean();
 
     if (!user) {
@@ -183,12 +183,12 @@ exports.updateLanguage = async (req, res) => {
     if (!id) {
       return res.status(404).json({ success: false, msg: "Invalid record" });
     }
-    if (req.body.language !=="english") {
-      if(req.body.language !=="urdu"){
+    if (req.body.language !=="english" || req.body.language !=="urdu") {
+      
         return res
         .status(400)
         .json({ success: false, msg: "Invalid input" });
-      }
+      
       
     }
     const user = await User.findOneAndUpdate(

@@ -5,11 +5,11 @@ const orderSchema = new Schema({
   name: { type: String , required:true,},
   address: { type: String, required:true,},
   description: { type: String },
-  ordered_by:{type: Schema.type.Object_Id, ref:"user"},
-  seller:{type: Schema.type.Object_Id, ref:"user"},
+  ordered_by:{type: Schema.Types.ObjectId, ref:"user"},
+  seller:{type: Schema.Types.ObjectId, ref:"user"},
   active: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now() },
-  products:[{type: Schema.type.Object_Id , ref:"products"}],
+  products:[{type: Schema.Types.ObjectId , ref:"products"}],
 
   order_status:{type:String, required :true , enum: ["approved", "dispatched", "delivered"]},
 

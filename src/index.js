@@ -3,18 +3,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRoutes = require("./routes/user");
-// const companyRoute = require("./routes/company");
-// const serviceProviderRoute = require("./routes/service-provider");
-// const spContactRoute = require("./routes/service-provider-contact");
 const dashBoardRoutes = require("./routes/dashboard");
-// const serviceSeekerRoute = require("./routes/service-seeker");
-// const uniqueCheckRoutes = require("./routes/unique");
-// const postRoutes = require("./routes/posts");
-// const reviewRoutes = require("./routes/review");
-// const resetRoutes = require("./routes/reset");
-// if(process.env.ENVIRONMENT === 'development') {
-//   process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
-// }
+const productRoutes = require("./routes/products");
+
 
 const app = express();
 
@@ -54,6 +45,7 @@ app.get("/", function (req, res) {
 });
 
 app.use("/api/v1/shoppingnrent/dashboard", dashBoardRoutes);
-app.use("/api/v1/shoppingnrent/user", userRoutes)
+app.use("/api/v1/shoppingnrent/user", userRoutes);
+app.use("/api/v1/shoppingnrent/product", productRoutes);
 
 

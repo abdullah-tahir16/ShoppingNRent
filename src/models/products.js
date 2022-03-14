@@ -10,7 +10,16 @@ const productSchema = new Schema({
   active: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now() },
   discount: { type: String },
-  stock:{type:Number, required:true, min: { type: Number, min: 0 }},
+  other_information:{type:String},
+  reference_id:{type:String},
+  deleted:{type:Boolean , default:false},
+  details: {type:String , },
+  created_by:{type: Schema.Types.ObjectId, ref:"user"},
+  category:{type:String,},
+  condition:{type:String},
+  make:{type:String},
+
+
 });
 
 module.exports = mongoose.model(`products`, productSchema, `product`);

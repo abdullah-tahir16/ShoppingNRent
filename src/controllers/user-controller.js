@@ -183,27 +183,30 @@ exports.updateLanguage = async (req, res) => {
     if (!id) {
       return res.status(404).json({ success: false, msg: "Invalid record" });
     }
-    if (req.body.language !=="english" || req.body.language !=="urdu") {
+    if (req.body.language =="english" || req.body.language === "urdu") {
       
-        return res
-        .status(400)
-        .json({ success: false, msg: "Invalid input" });
+      const user = await User.findOneAndUpdate(
+        id,
+        { language: req.body.language, },
+        { new: true } 
+      ).lean();
+  
+      if (!user) {
+        return res.status(404).json({ success: false, msg: "Invalid Request" });
+      }
+      return res.status(200).json({
+        success: true,
+        msg: "Langugae updated successfully",
+      });
       
-      
+     
     }
-    const user = await User.findOneAndUpdate(
-      id,
-      { language: req.body.language, },
-      { new: true } 
-    ).lean();
-
-    if (!user) {
-      return res.status(404).json({ success: false, msg: "Invalid Request" });
+    else{
+      return res
+      .status(400)
+      .json({ success: false, msg: "Invalid input" });
     }
-    return res.status(200).json({
-      success: true,
-      msg: "Langugae updated successfully",
-    });
+    
   } catch (error) {
     console.error(error);
     return res

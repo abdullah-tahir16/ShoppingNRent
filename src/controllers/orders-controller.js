@@ -7,13 +7,6 @@ exports.createOrder = async (req, res) => {
       ...req.body,
     });
 
-    await sendMail(
-      user.email,
-      "Your Order has been placed Successfully",
-      `${order.reference_id} <br> put your additional html here 
-      ShoppingNRent Team`
-    );
-
     return res.status(200).json({
       success: true,
       msg: "Order created successfully",
@@ -75,17 +68,7 @@ exports.getOrderById = async (req, res) => {
 // delete order by id
 exports.deleteOrderById = async (req, res) => {
   try {
-
-    const order = await Orders.findOne({ _id: req.params.order_id }).lean();
-
     await Orders.deleteOne({ _id: req.params.order_id });
-
-    await sendMail(
-      user.email,
-      "Your Order has been deleted Successfully",
-      `${order.reference_id} <br> put your additional html here 
-      ShoppingNRent Team`
-    );
 
     return res.status(200).json({
       success: true,

@@ -2,6 +2,8 @@ const Product = require("../models/products");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const { sendMail } = require("../services/emailer");
+
 
 exports.createProduct = async (req, res) => {
   try {
@@ -41,6 +43,12 @@ exports.createProduct = async (req, res) => {
       });
       // product.parseSequence();
     }
+    await sendMail(
+      user.email,
+      "Your Product has been added Successfully",
+      `${req.body.name} <br> put your additional html here 
+      ShoppingNRent Team`
+    );
 
     return res.status(200).json({
       success: true,
@@ -110,6 +118,8 @@ exports.updateProduct = async (req, res) => {
         ...updateObject,
       }
     ).lean();
+
+    
 
     return res.status(200).json({
       success: true,

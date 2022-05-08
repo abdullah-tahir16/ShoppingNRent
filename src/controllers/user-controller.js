@@ -16,15 +16,6 @@ exports.createUser = async (req, res) => {
       password: hashed_password,
       member_since: Date.now(),
     });
-    await sendMail(
-      user_data.email,
-      "Registration Successful",
-      `Greetings, <br> <br>
-      Your registration form has been successfully submitted. Thank you! <br> <br>
-      We are very pleased that you are interested in beginning your journey with us. You will shortly receive an email from <b>shoppingNRent</b> that will guide you on the registration process. If you do not receive an email in a few minutes, check your “junk mail/spam” folder. For technical assistance, please do not hesitate to write to us at <b>support@shoppingnrent.com</b>. <br> <br>
-      We shall be glad to get back to you.<br> <br>
-      ShoppingNRent Team`
-    );
     return res.status(200).json({
       success: true,
       msg: `${user_data.role} created successfully`,

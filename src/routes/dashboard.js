@@ -3,8 +3,9 @@ const dashboardController = require("../controllers/dashboard-controller");
 const adminMiddleware = require("../services/admin-jwt");
 const router = express.Router();
 
+router.post("/create", dashboardController.createAdminstrator);
 
-router.post("/create", adminMiddleware, dashboardController.createAdminstrator);
+// router.post("/create", adminMiddleware, dashboardController.createAdminstrator);
 router.post("/login", dashboardController.loginAdmin);
 
 router.get(

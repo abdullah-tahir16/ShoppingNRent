@@ -3,13 +3,11 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../services/emailer");
 
-
-// Create API
-exports.createUser = async (req, res) => {
+const createUser = async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(10);
     const { password } = req.body;
-    const hashed_password = await bcrypt.hash(password, salt); // Encrypting password before saving it in DB
+    const hashed_password = await bcrypt.hash(password, salt);
 
     const user_data = await User.create({
       ...req.body,
@@ -17,6 +15,7 @@ exports.createUser = async (req, res) => {
       password: hashed_password,
       member_since: Date.now(),
     });
+
     await sendMail(
       user_data.email,
       "Registration Successful",
@@ -26,6 +25,7 @@ exports.createUser = async (req, res) => {
       We shall be glad to get back to you.<br> <br>
       ShoppingNRent Team`
     );
+
     return res.status(200).json({
       success: true,
       msg: `${user_data.role} created successfully`,
@@ -37,42 +37,41 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Login API
-exports.loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
   const { email, password, username } = req.body;
 
   try {
     const user = await User.findOne({
       $or: [{ email: email }, { username: username }],
     }).lean();
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, msg: "Invalid credentials" });
+      return res.status(404).json({ success: false, msg: "Invalid credentials" });
     }
 
-    const is_match = await bcrypt.compare(password, user.password); // Matching encrypted passwords
+    const is_match = await bcrypt.compare(password, user.password);
+
     if (!is_match) {
-      return res
-        .status(404)
-        .json({ success: false, msg: "Invalid credentials" });
+      return res.status(404).json({ success: false, msg: "Invalid credentials" });
     }
+
     if (!user.approved) {
-      return res
-        .status(404)
-        .json({ success: false, msg: "Account pending approval." });
+      return res.status(404).json({ success: false, msg: "Account pending approval." });
     }
+
     if (user.suspended) {
       return res.status(401).json({
         success: false,
         msg: "Account has been suspended. Contact Administrator",
       });
     }
+
     const payload = {
       user: {
         id: user._id,
       },
     };
+
     return res.status(200).json({
       success: true,
       token: jwt.sign(payload, process.env.JWT_SECRET_USER, {
@@ -82,23 +81,18 @@ exports.loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error.message);
-    return res
-      .status(400)
-      .json({ success: false, msg: "Service is down. Contact administrator" });
+    return res.status(400).json({ success: false, msg: "Service is down. Contact administrator" });
   }
 };
 
-// Approving User
-exports.approveUser = async (req, res) => {
+const approveUser = async (req, res) => {
   try {
     const { id } = req.query;
-    if (!id) {
-      return res.status(404).json({ success: false, msg: "Invalid record" });
+    
+    if (!id || !req.body.is_approved) {
+      return res.status(400).json({ success: false, msg: "Invalid record" });
     }
-    if (!req.body.is_approved) {
-      console.error("is_approved key not valid");
-      return res.status(404).json({ success: false, msg: "Invalid record" });
-    }
+    
     const user = await User.findOneAndUpdate(
       { _id: id },
       { approved: req.body.is_approved },
@@ -106,9 +100,8 @@ exports.approveUser = async (req, res) => {
     ).lean();
 
     if (!user) {
-      return res.status(404).json({ success: false, msg: "Invalid Request" });
+      return res.status(400).json({ success: false, msg: "Invalid Request" });
     }
-
 
     return res.status(200).json({
       success: true,
@@ -117,29 +110,27 @@ exports.approveUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(400)
-      .json({ success: false, msg: "Service is down. Contact administrator" });
+    return res.status(400).json({ success: false, msg: "Service is down. Contact administrator" });
   }
 };
 
-// User get by Id
-exports.getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
     const { id } = req.query;
 
     if (!id) {
-      return res.status(404).json({ success: false, msg: "Invalid record" });
+      return res.status(400).json({ success: false, msg: "Invalid record" });
     }
 
     const user = await User.findOne(
       { _id: id },
-      { password: false,  _id: false, __v: false }
+      { password: false, _id: false, __v: false }
     ).lean();
 
     if (!user) {
-      return res.status(404).json({ success: false, msg: "Invalid record" });
+      return res.status(400).json({ success: false, msg: "Invalid record" });
     }
+
     return res.status(200).json({
       success: true,
       msg: "User found",
@@ -147,80 +138,71 @@ exports.getUserById = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(400)
-      .json({ success: false, msg: "Service is down. Contact administrator" });
+    return res.status(400).json({ success: false, msg: "Service is down. Contact administrator" });
   }
 };
 
-// Update API
-exports.updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const { id } = req.query;
-    if (!id) {
-      return res.status(404).json({ success: false, msg: "Invalid record" });
+
+    if (!id || !req.body) {
+      return res.status(400).json({ success: false, msg: "Invalid record. Cannot modify." });
     }
-    if (!req.body) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Invalid record. Cannot modify." });
-    }
+
     const user = await User.findOneAndUpdate(
-      id,
+      { _id: id },
       { ...req.body },
       { new: true }
     ).lean();
 
     if (!user) {
-      return res.status(404).json({ success: false, msg: "Invalid Request" });
+      return res.status(400).json({ success: false, msg: "Invalid Request" });
     }
+
     return res.status(200).json({
       success: true,
       msg: "Profile updated successfully",
     });
   } catch (error) {
     console.error(error);
-    return res
-      .status(400)
-      .json({ success: false, msg: "Service is down. Contact administrator" });
+    return res.status(400).json({ success: false, msg: "Service is down. Contact administrator" });
   }
 };
 
-
-exports.updateLanguage = async (req, res) => {
+const updateLanguage = async (req, res) => {
   try {
     const { id } = req.query;
-    if (!id) {
-      return res.status(404).json({ success: false, msg: "Invalid record" });
+
+    if (!id || (req.body.language !== "english" && req.body.language !== "urdu")) {
+      return res.status(400).json({ success: false, msg: "Invalid input" });
     }
-    if (req.body.language =="english" || req.body.language === "urdu") {
-      
-      const user = await User.findOneAndUpdate(
-        id,
-        { language: req.body.language, },
-        { new: true } 
-      ).lean();
-  
-      if (!user) {
-        return res.status(404).json({ success: false, msg: "Invalid Request" });
-      }
-      return res.status(200).json({
-        success: true,
-        msg: "Langugae updated successfully",
-      });
-      
-     
+
+    const user = await User.findOneAndUpdate(
+      { _id: id },
+      { language: req.body.language },
+      { new: true }
+    ).lean();
+
+    if (!user) {
+      return res.status(400).json({ success: false, msg: "Invalid Request" });
     }
-    else{
-      return res
-      .status(400)
-      .json({ success: false, msg: "Invalid input" });
-    }
-    
+
+    return res.status(200).json({
+      success: true,
+      msg: "Language updated successfully",
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(400)
-      .json({ success: false, msg: "Service is down. Contact administrator" });
+    return res.status(400).json({ success: false, msg: "Service is down. Contact administrator" });
   }
+};
+
+module.exports = {
+  createUser,
+  loginUser,
+  approveUser,
+  getUserById,
+  updateUser,
+  updateLanguage,
 };

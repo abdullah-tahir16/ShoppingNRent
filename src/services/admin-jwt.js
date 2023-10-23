@@ -1,33 +1,28 @@
 const jwt = require("jsonwebtoken");
 
-// FOR ROUTE SECUIRTY
+// Middleware for route security
 module.exports = function (req, res, next) {
-  if (!req.headers["authorization"]) {
-    return res.status(400).json({
-      message: "You are not authorized to perform this action",
-    });
-  }
-  let token = req.headers["authorization"].split("Bearer ")[1];
+  const authorizationHeader = req.headers["authorization"];
 
-  // decode token
-  if (token) {
-    
-    // verifies secret and checks exp
-    jwt.verify(token, process.env.JWT_SECRET_ADMIN, function (err, decoded) {
-      if (err) {
-        return res.json({
-          error: true,
-          message: "You are not authorized to perform this action.",
-        });
-      }
-      req.decoded = decoded;
-      next();
-    });
-  } else {
-    // if there is no token
-    // return an error
+  if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
     return res.status(400).json({
       message: "You are not authorized to perform this action.",
     });
   }
+
+  const token = authorizationHeader.split("Bearer ")[1];
+
+  // Verify the token
+  jwt.verify(token, process.env.JWT_SECRET_ADMIN, function (err, decoded) {
+    if (err) {
+      return res.status(401).json({
+        error: true,
+        message: "You are not authorized to perform this action.",
+      });
+    }
+    
+    // Attach the decoded token to the request for later use
+    req.decoded = decoded;
+    next();
+  });
 };

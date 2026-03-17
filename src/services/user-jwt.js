@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken");
 
 // Middleware for route security
 module.exports = function (req, res, next) {
-  const authorizationHeader = req.headers["authorization"];
+  const authorizationHeader =
+    req.headers["x-user-authorization"] || req.headers["authorization"];
 
   if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
     return res.status(400).json({

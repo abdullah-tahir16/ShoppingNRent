@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "description": "ShoppingNRent API",
   "main": "src/index.js",
+  "packageManager": "pnpm@10.30.3",
   "scripts": {
+    "build": "pnpm --dir frontend build",
+    "docker:seed": "docker compose -f docker-compose.seed.yml up --build --abort-on-container-exit seed",
+    "docker:seed:reset": "docker compose -f docker-compose.seed.yml run --rm seed pnpm seed:reset",
     "start": "node src/index.js",
-    "dev": "nodemon --watch src --ext js src/index.js",
+    "dev": "concurrently -n api,web -c cyan,yellow \"pnpm run dev:api\" \"pnpm run dev:web\"",
+    "dev:api": "nodemon --watch src --ext js src/index.js",
+    "dev:web": "pnpm --dir frontend dev",
     "seed": "node src/scripts/seed.js",
     "seed:reset": "node src/scripts/seed.js --reset",
     "check": "node --check src/index.js && node --check src/app.js && node --check src/scripts/seed.js",
-    "test": "npm run check"
+    "test": "pnpm run check && pnpm --dir frontend build"
   },
   "repository": {
     "type": "git",
@@ -36,5 +42,8 @@
     "mongoose": "^9.3.1",
     "nodemailer": "^8.0.2",
     "nodemon": "^3.1.14"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

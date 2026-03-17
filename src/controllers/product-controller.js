@@ -127,7 +127,7 @@ const deleteProduct = async (req, res) => {
 
 const getProductByCity = async (req, res) => {
   try {
-    const { city } = req.body;
+    const city = req.query.city || req.body.city;
 
     if (!city) {
       return res.status(400).json({ success: false, msg: "Invalid search query" });
@@ -154,7 +154,11 @@ const getProductByCity = async (req, res) => {
 
 const getProductBySeller = async (req, res) => {
   try {
-    const createdBy = req.body.createdBy || req.body.created_by;
+    const createdBy =
+      req.query.createdBy ||
+      req.query.created_by ||
+      req.body.createdBy ||
+      req.body.created_by;
 
     if (!createdBy) {
       return res.status(400).json({ success: false, msg: "Invalid search query" });

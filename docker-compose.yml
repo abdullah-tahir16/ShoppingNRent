@@ -26,7 +26,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
+      - /app/frontend/node_modules
+    command: pnpm dev
 
   mongo:
     image: mongo:8

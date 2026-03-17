@@ -1,0 +1,41 @@
+services:
+  mongo:
+    image: mongo:8
+    container_name: shoppingnrent-seed-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: shoppingnrent
+    volumes:
+      - mongo-seed-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit:v1.25
+    container_name: shoppingnrent-seed-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  seed:
+    build:
+      context: .
+    container_name: shoppingnrent-seed-runner
+    env_file:
+      - .env.docker
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    command: pnpm seed
+
+volumes:
+  mongo-seed-data:

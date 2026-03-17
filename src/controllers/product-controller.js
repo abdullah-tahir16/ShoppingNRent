@@ -20,17 +20,17 @@ const createProduct = async (req, res) => {
       name,
       city,
       description,
-      picture_link: pictureLink,
+      pictureLink,
       active,
       discount,
-      other_information: otherInfo || "Blank field",
+      otherInformation: otherInfo || "Blank field",
       created_at: Date.now(),
       details,
       price,
       category,
       condition,
       make,
-      created_by: user,
+      createdBy: user._id,
     });
 
     await sendMail(
@@ -44,7 +44,7 @@ const createProduct = async (req, res) => {
       msg: "Product created successfully",
       data: req.body,
       id: product._id,
-      referenceId: product.reference_id,
+      referenceId: product.referenceId,
     });
   } catch (error) {
     console.error(error);
@@ -62,14 +62,36 @@ const updateProduct = async (req, res) => {
     }
 
     // Define properties to update
-    const updateFields = ["name", "details", "city", "description", "pictureLink", "otherInfo", "condition", "price", "make", "active", "category", "discount"];
-    for (const field of updateFields) {
-      if (req.body[field]) {
-        updateObject[field] = req.body[field];
+    const updateFields = {
+      name: "name",
+      details: "details",
+      city: "city",
+      description: "description",
+      pictureLink: "pictureLink",
+      otherInfo: "otherInformation",
+      condition: "condition",
+      price: "price",
+      make: "make",
+      active: "active",
+      category: "category",
+      discount: "discount",
+    };
+
+    for (const [requestField, modelField] of Object.entries(updateFields)) {
+      if (requestField in req.body) {
+        updateObject[modelField] = req.body[requestField];
       }
     }
 
-    const updateSingleProduct = await Product.findOneAndUpdate({ _id: id }, updateObject).lean();
+    const updateSingleProduct = await Product.findOneAndUpdate(
+      { _id: id },
+      updateObject,
+      { new: true }
+    ).lean();
+
+    if (!updateSingleProduct) {
+      return res.status(404).json({ success: false, msg: "Product not found" });
+    }
 
     return res.status(200).json({
       success: true,
@@ -132,14 +154,14 @@ const getProductByCity = async (req, res) => {
 
 const getProductBySeller = async (req, res) => {
   try {
-    const { created_by } = req.body;
+    const createdBy = req.body.createdBy || req.body.created_by;
 
-    if (!created_by) {
+    if (!createdBy) {
       return res.status(400).json({ success: false, msg: "Invalid search query" });
     }
 
     const productBySeller = await Product.find({
-      created_by,
+      createdBy,
       deleted: false,
     }).lean();
 

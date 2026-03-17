@@ -11,9 +11,9 @@ const createUser = async (req, res) => {
 
     const user_data = await User.create({
       ...req.body,
-      promo_code: req.body.promoCode || "No promo code applied",
+      promoCode: req.body.promoCode || "No promo code applied",
       password: hashed_password,
-      member_since: Date.now(),
+      created_at: Date.now(),
     });
 
     await sendMail(
@@ -88,14 +88,16 @@ const loginUser = async (req, res) => {
 const approveUser = async (req, res) => {
   try {
     const { id } = req.query;
+    const approvalValue =
+      typeof req.body.is_approved === "boolean" ? req.body.is_approved : req.query.is_approved === "true";
     
-    if (!id || !req.body.is_approved) {
+    if (!id || typeof approvalValue !== "boolean") {
       return res.status(400).json({ success: false, msg: "Invalid record" });
     }
     
     const user = await User.findOneAndUpdate(
       { _id: id },
-      { approved: req.body.is_approved },
+      { approved: approvalValue },
       { new: true }
     ).lean();
 
@@ -105,7 +107,7 @@ const approveUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      approval: req.body.is_approved,
+      approval: approvalValue,
       msg: "Account modified successfully",
     });
   } catch (error) {

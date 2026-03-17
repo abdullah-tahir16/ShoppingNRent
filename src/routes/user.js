@@ -43,7 +43,7 @@ router.post("/update", userMiddleware, (req, res, next) => {
   }
 
   // Check if any valid update fields are provided
-  const validUpdateFields = ["name", "cnic", "city", "contact_number1", "password", "contact_number2", "contact_address_comm", "contact_address_permanent", "email", "username", "promo_code", "role"];
+  const validUpdateFields = ["name", "cnic", "city", "contactNumber1", "password", "contactNumber2", "contactAddressComm", "contactAddressPermanent", "email", "username", "promoCode", "role"];
   const isUpdateValid = validUpdateFields.some((field) => field in req.body);
 
   if (!isUpdateValid) {

@@ -45,8 +45,8 @@ router.get("/getProductsByCity", userMiddleware, adminMiddleware, (req, res, nex
 // Get products by seller
 router.get("/getProductsBySeller", userMiddleware, adminMiddleware, (req, res, next) => {
   // Add validation and error handling for the request body
-  const { created_by } = req.body;
-  if (!created_by) {
+  const createdBy = req.body.createdBy || req.body.created_by;
+  if (!createdBy) {
     return res.status(400).json({ success: false, msg: "Invalid search query" });
   }
   next();

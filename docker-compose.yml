@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: shoppingnrent-app
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      PORT: ${PORT:-5005}
+      DATABASE: ${DATABASE:-mongodb://mongo:27017/shoppingnrent}
+      JWT_SECRET_BUYER: ${JWT_SECRET_BUYER:-buyer-secret-change-me}
+      JWT_SECRET_ADMIN: ${JWT_SECRET_ADMIN:-admin-secret-change-me}
+      JWT_SECRET_USER: ${JWT_SECRET_USER:-user-secret-change-me}
+      JWT_SECRET_BOTH: ${JWT_SECRET_BOTH:-both-secret-change-me}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      HOST: ${HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      IS_TLS: ${IS_TLS:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@shoppingnrent.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpass}
+    ports:
+      - "${PORT:-5005}:5005"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+  mongo:
+    image: mongo:8
+    container_name: shoppingnrent-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: shoppingnrent
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit:v1.25
+    container_name: shoppingnrent-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  mongo-data:

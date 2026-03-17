@@ -1,49 +1,47 @@
 require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const userRoutes = require("./routes/user");
-const dashBoardRoutes = require("./routes/dashboard");
-const productRoutes = require("./routes/products");
+const app = require("./app");
+const { connectDatabase, disconnectDatabase } = require("./config/database");
+const port = Number.parseInt(process.env.PORT, 10) || 5005;
+let server;
 
-const app = express();
-
-// Disable x-powered-by header
-app.disable("x-powered-by");
-
-// Enable CORS
-app.use(cors());
-
-// Parse JSON requests
-app.use(express.json());
-
-// Connect to the database and start the server
-app.listen(process.env.PORT, async () => {
+async function startServer() {
   try {
-    console.log(`Service started on port: ${process.env.PORT}`);
+    await connectDatabase(process.env.DATABASE);
 
-    await mongoose.connect(process.env.DATABASE, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      autoIndex: true,
-      socketTimeoutMS: 45000,
+    console.log("Database connected");
+
+    server = app.listen(port, () => {
+      console.log(`Service started on port: ${port}`);
     });
-
-    console.log(`Database connected`);
-  } catch (e) {
-    console.log(`Database connection failed - ${e.message}`);
+  } catch (error) {
+    console.error(`Database connection failed - ${error.message}`);
+    process.exit(1);
   }
-});
+}
 
-// Root route
-app.get("/", function (req, res) {
-  res.status(200).json({
-    success: true,
-    message: "Welcome to ShoppingNRent",
-  });
-});
+async function shutdown(signal) {
+  try {
+    console.log(`Received ${signal}. Shutting down gracefully...`);
+    if (server) {
+      await new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+    }
+    await disconnectDatabase();
+    process.exit(0);
+  } catch (error) {
+    console.error(`Shutdown failed - ${error.message}`);
+    process.exit(1);
+  }
+}
 
-// Define routes
-app.use("/api/v1/shoppingnrent/dashboard", dashBoardRoutes);
-app.use("/api/v1/shoppingnrent/user", userRoutes);
-app.use("/api/v1/shoppingnrent/product", productRoutes);
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+startServer();

@@ -11,7 +11,7 @@ const productSchema = new Schema({
   created_at: { type: Date, default: Date.now },
   discount: { type: Number }, // If it's a numerical discount value
   otherInformation: { type: String }, // Use camelCase for field name
-  referenceId: { type: String }, // Use camelCase for field name
+  referenceId: { type: String, unique: true }, // Use camelCase for field name
   deleted: { type: Boolean, default: false },
   details: { type: String },
   createdBy: { type: Schema.Types.ObjectId, ref: "user" },

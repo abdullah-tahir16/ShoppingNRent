@@ -5,11 +5,11 @@ const createOrder = async (req, res) => {
   try {
     const order = await Orders.create({ ...req.body });
 
-    const userEmail = user.email; // Assuming `user` is defined somewhere
-    const emailSubject = "Your Order has been placed Successfully";
-    const emailContent = `${order.reference_id} <br> put your additional html here ShoppingNRent Team`;
-
-    await sendMail(userEmail, emailSubject, emailContent);
+    if (req.body.email) {
+      const emailSubject = "Your Order has been placed Successfully";
+      const emailContent = `${order.referenceId} <br> put your additional html here ShoppingNRent Team`;
+      await sendMail(req.body.email, emailSubject, emailContent);
+    }
 
     return res.status(200).json({
       success: true,
@@ -65,13 +65,17 @@ const deleteOrderById = async (req, res) => {
   try {
     const order = await Orders.findOne({ _id: req.params.order_id }).lean();
 
+    if (!order) {
+      return res.status(404).json({ success: false, msg: "Order not found" });
+    }
+
     await Orders.deleteOne({ _id: req.params.order_id });
 
-    const userEmail = user.email; // Assuming `user` is defined somewhere
-    const emailSubject = "Your Order has been deleted Successfully";
-    const emailContent = `${order.reference_id} <br> put your additional html here ShoppingNRent Team`;
-
-    await sendMail(userEmail, emailSubject, emailContent);
+    if (req.body.email) {
+      const emailSubject = "Your Order has been deleted Successfully";
+      const emailContent = `${order.referenceId} <br> put your additional html here ShoppingNRent Team`;
+      await sendMail(req.body.email, emailSubject, emailContent);
+    }
 
     return res.status(200).json({
       success: true,

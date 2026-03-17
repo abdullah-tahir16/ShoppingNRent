@@ -1,12 +1,16 @@
 const nodemailer = require("nodemailer");
 
+function parseBoolean(value) {
+  return String(value).trim().toLowerCase() === "true";
+}
+
 // Function to send an email
 exports.sendMail = async (to, subject, body) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,
-      port: process.env.SMTP_PORT,
-      secure: Boolean(process.env.IS_TLS),
+      port: Number.parseInt(process.env.SMTP_PORT, 10),
+      secure: parseBoolean(process.env.IS_TLS),
       auth: {
         user: process.env.ADMIN_EMAIL,
         pass: process.env.ADMIN_PASSWORD,

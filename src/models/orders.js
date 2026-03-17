@@ -18,7 +18,7 @@ const orderSchema = new Schema({
   },
 
   // generated id for user reference
-  reference_id: mongoose.Types.ObjectId,
+  referenceId: { type: Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
   // product and order discount both can be given
   discount: { type: Number },
 
